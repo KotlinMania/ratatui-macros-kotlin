@@ -28,7 +28,7 @@ plugins {
 }
 
 group = "io.github.kotlinmania"
-version = "0.1.0"
+version = "0.1.1"
 
 val androidCommandLineToolsRevision = "14742923"
 val projectCompileSdk = "34"
@@ -273,7 +273,7 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.4.0")
-                implementation("io.github.kotlinmania:ratatui-kotlin:0.1.9")
+                implementation("io.github.kotlinmania:ratatui-kotlin:0.1.10")
             }
         }
         val commonTest by getting {
@@ -480,6 +480,59 @@ val fullTargetBuildTaskNames = setOf(
 
 tasks.named("build") {
     dependsOn(fullTargetBuildTaskNames)
+}
+
+val requiredPublicationNames = setOf(
+    "kotlinMultiplatform",
+    "android",
+    "jvm",
+    "js",
+    "wasmJs",
+    "wasmWasi",
+    "androidNativeArm32",
+    "androidNativeArm64",
+    "androidNativeX64",
+    "androidNativeX86",
+    "iosArm64",
+    "iosSimulatorArm64",
+    "iosX64",
+    "linuxArm64",
+    "linuxX64",
+    "macosArm64",
+    "mingwX64",
+    "tvosArm64",
+    "tvosSimulatorArm64",
+    "watchosArm32",
+    "watchosArm64",
+    "watchosDeviceArm64",
+    "watchosSimulatorArm64",
+)
+
+fun publishTaskName(publicationName: String): String =
+    "publish${publicationName.replaceFirstChar { it.titlecase() }}PublicationToMavenLocal"
+
+val verifyPublishedTargetPublications = tasks.register("verifyPublishedTargetPublications") {
+    group = "verification"
+    description = "Fails when any declared Kotlin target lacks a Maven publication task."
+    doLast {
+        val missing = requiredPublicationNames
+            .map { it to publishTaskName(it) }
+            .filterNot { (_, taskName) -> tasks.names.contains(taskName) }
+        if (missing.isNotEmpty()) {
+            throw GradleException(
+                "Missing Maven publication tasks for target publications: " +
+                    missing.joinToString { (publicationName, taskName) -> "$publicationName ($taskName)" },
+            )
+        }
+    }
+}
+
+tasks.named("build") {
+    dependsOn(verifyPublishedTargetPublications)
+}
+
+tasks.named("publishToMavenLocal") {
+    dependsOn(verifyPublishedTargetPublications)
 }
 
 afterEvaluate {
