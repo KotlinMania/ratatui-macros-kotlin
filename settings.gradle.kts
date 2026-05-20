@@ -17,3 +17,12 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "ratatui-macros-kotlin"
+
+val ratatuiLocal = file("../ratatui-kotlin")
+if (ratatuiLocal.isDirectory) {
+    includeBuild(ratatuiLocal) {
+        dependencySubstitution {
+            substitute(module("io.github.kotlinmania:ratatui-kotlin")).using(project(":"))
+        }
+    }
+}
