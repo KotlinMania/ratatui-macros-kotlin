@@ -5,6 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import ratatui.layout.Constraint
 import ratatui.layout.Layout
+import ratatui.layout.Rect
 import ratatui.style.Color
 import ratatui.style.Modifier
 import ratatui.style.Style
@@ -106,6 +107,65 @@ class MacroHelpersTest {
         assertEquals(Layout.vertical(all), vertical(*all.toTypedArray()))
         assertEquals(Layout.horizontal(all), horizontal(all))
         assertEquals(Layout.horizontal(all), horizontal(*all.toTypedArray()))
+    }
+
+    @Test
+    fun layoutHelpersSplitAreasLikeUpstreamMacroTest() {
+        val rect = Rect.new(0, 0, 10, 10)
+
+        assertEquals(
+            listOf(
+                Rect.new(0, 0, 10, 7),
+                Rect.new(0, 7, 10, 3),
+            ),
+            vertical(eq(7), le(3)).split(rect),
+        )
+        assertEquals(
+            listOf(
+                Rect.new(0, 0, 7, 10),
+                Rect.new(7, 0, 3, 10),
+            ),
+            horizontal(eq(7), le(3)).split(rect),
+        )
+
+        val one = 1
+        val two = 2
+        val ten = 10
+        val zero = 0
+        val expected = listOf(
+            Rect.new(0, 0, 1, 10),
+            Rect.new(1, 0, 1, 10),
+            Rect.new(2, 0, 1, 10),
+            Rect.new(3, 0, 5, 10),
+            Rect.new(8, 0, 1, 10),
+            Rect.new(9, 0, 1, 10),
+        )
+
+        assertEquals(
+            expected,
+            horizontal(eq(one), ge(one), le(one), ratio(1, two), percent(ten), ge(zero)).split(rect),
+        )
+        assertEquals(
+            expected,
+            horizontal(eq(one * one), ge(one + zero), le(one - zero), ratio(1, two), percent(ten), ge(zero))
+                .split(rect),
+        )
+
+        assertEquals(
+            listOf(
+                Constraint.Min(0),
+                Constraint.Length(1),
+                Constraint.Max(5),
+                Constraint.Percentage(10),
+                Constraint.Ratio(1u, 2u),
+            ),
+            constraints(ge(0), eq(1), le(5), percent(10), ratio(1, 2)),
+        )
+        assertEquals(List(5) { Constraint.Min(0) }, constraints(ge(0), 5))
+        assertEquals(List(5) { Constraint.Max(0) }, constraints(le(0), 5))
+        assertEquals(List(2) { Constraint.Length(0) }, constraints(eq(0), 2))
+        assertEquals(List(2) { Constraint.Percentage(50) }, constraints(percent(50), 2))
+        assertEquals(List(2) { Constraint.Ratio(1u, 2u) }, constraints(ratio(1, 2), 2))
     }
 
     @Test
