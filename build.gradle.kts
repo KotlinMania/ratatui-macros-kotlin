@@ -50,6 +50,23 @@ val androidSdkManager = projectAndroidSdkDir.resolve(
     },
 )
 val androidSdkInstallMarker = projectAndroidSdkDir.resolve(".install-complete")
+val maxAndroidSdkLicensePrompts = 200
+val requiredAndroidSdkPackageDirs = listOf(
+    projectAndroidSdkDir.resolve("platform-tools"),
+    projectAndroidSdkDir.resolve("platforms/android-$projectCompileSdk"),
+    projectAndroidSdkDir.resolve("build-tools/$projectAndroidBuildTools"),
+)
+
+fun isProjectAndroidSdkInstalled(): Boolean {
+    val installed =
+        androidSdkInstallMarker.exists() &&
+            androidSdkManager.exists() &&
+            requiredAndroidSdkPackageDirs.all { it.exists() }
+    if (!installed && androidSdkInstallMarker.exists()) {
+        androidSdkInstallMarker.delete()
+    }
+    return installed
+}
 
 fun writeAndroidLocalProperties() {
     val sdkDirPropertyValue = projectAndroidSdkDir.absolutePath.replace("\\", "/")
@@ -114,7 +131,7 @@ fun downloadAndroidCommandLineTools() {
 }
 
 fun installProjectAndroidSdk(execOperations: ExecOperations) {
-    if (androidSdkInstallMarker.exists() && androidSdkManager.exists()) {
+    if (isProjectAndroidSdkInstalled()) {
         writeAndroidLocalProperties()
         println("setup-android-sdk: SDK already installed at $projectAndroidSdkDir")
         return
@@ -125,7 +142,7 @@ fun installProjectAndroidSdk(execOperations: ExecOperations) {
     }
 
     println("setup-android-sdk: accepting licenses")
-    val licenseAnswers = "y\n".repeat(200).toByteArray(Charsets.UTF_8)
+    val licenseAnswers = "y\n".repeat(maxAndroidSdkLicensePrompts).toByteArray(Charsets.UTF_8)
     val licenseResult = execOperations.exec {
         commandLine(sdkManagerCommand("--sdk_root=${projectAndroidSdkDir.absolutePath}", "--licenses"))
         standardInput = ByteArrayInputStream(licenseAnswers)
@@ -196,7 +213,11 @@ kotlin {
         binaries.framework { baseName = "RatatuiMacros"; xcf.add(this) }
     }
     iosArm64 {
-        binaries.framework { baseName = "RatatuiMacros"; xcf.add(this) }
+        binaries.framework {
+            baseName = "RatatuiMacros"
+            isStatic = true
+            xcf.add(this)
+        }
     }
     iosSimulatorArm64 {
         binaries.framework {
@@ -213,34 +234,8 @@ kotlin {
         }
     }
 
-    tvosArm64 {
-        binaries.framework { baseName = "RatatuiMacros"; xcf.add(this) }
-    }
-    tvosSimulatorArm64 {
-        binaries.framework { baseName = "RatatuiMacros"; xcf.add(this) }
-    }
-
-    watchosArm32 {
-        binaries.framework { baseName = "RatatuiMacros"; xcf.add(this) }
-    }
-    watchosArm64 {
-        binaries.framework { baseName = "RatatuiMacros"; xcf.add(this) }
-    }
-    watchosDeviceArm64 {
-        binaries.framework { baseName = "RatatuiMacros"; xcf.add(this) }
-    }
-    watchosSimulatorArm64 {
-        binaries.framework { baseName = "RatatuiMacros"; xcf.add(this) }
-    }
-
     linuxX64()
-    linuxArm64()
     mingwX64()
-
-    androidNativeArm32()
-    androidNativeArm64()
-    androidNativeX86()
-    androidNativeX64()
 
     js {
         browser()
@@ -249,10 +244,6 @@ kotlin {
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser()
-        nodejs()
-    }
-    @OptIn(ExperimentalWasmDsl::class)
-    wasmWasi {
         nodejs()
     }
 
@@ -271,8 +262,6 @@ kotlin {
         }
     }
 
-    jvm()
-
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -281,7 +270,7 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.4.0")
-                implementation("io.github.kotlinmania:ratatui-kotlin:0.1.10")
+                implementation("io.github.kotlinmania:ratatui-kotlin:0.1.9")
             }
         }
         val commonTest by getting {
@@ -424,7 +413,6 @@ tasks.register("test") {
 
     val defaultTestTasks = listOf(
         "macosArm64Test",
-        "jvmTest",
         "jsNodeTest",
         "wasmJsNodeTest",
         "compileAndroidMain",
@@ -441,48 +429,22 @@ val fullTargetBuildTaskNames = setOf(
     "assembleAndroidMain",
     "assembleUnitTest",
     "assembleAndroidTest",
-    "jvmMainClasses",
-    "jvmTestClasses",
     "jsMainClasses",
     "jsTestClasses",
     "wasmJsMainClasses",
     "wasmJsTestClasses",
-    "wasmWasiMainClasses",
-    "wasmWasiTestClasses",
-    "androidNativeArm32Binaries",
-    "androidNativeArm32TestBinaries",
-    "androidNativeArm64Binaries",
-    "androidNativeArm64TestBinaries",
-    "androidNativeX64Binaries",
-    "androidNativeX64TestBinaries",
-    "androidNativeX86Binaries",
-    "androidNativeX86TestBinaries",
     "iosArm64Binaries",
     "iosArm64TestBinaries",
     "iosSimulatorArm64Binaries",
     "iosSimulatorArm64TestBinaries",
     "iosX64Binaries",
     "iosX64TestBinaries",
-    "linuxArm64Binaries",
-    "linuxArm64TestBinaries",
     "linuxX64Binaries",
     "linuxX64TestBinaries",
     "macosArm64Binaries",
     "macosArm64TestBinaries",
     "mingwX64Binaries",
     "mingwX64TestBinaries",
-    "tvosArm64Binaries",
-    "tvosArm64TestBinaries",
-    "tvosSimulatorArm64Binaries",
-    "tvosSimulatorArm64TestBinaries",
-    "watchosArm32Binaries",
-    "watchosArm32TestBinaries",
-    "watchosArm64Binaries",
-    "watchosArm64TestBinaries",
-    "watchosDeviceArm64Binaries",
-    "watchosDeviceArm64TestBinaries",
-    "watchosSimulatorArm64Binaries",
-    "watchosSimulatorArm64TestBinaries",
     "assembleRatatuiMacrosXCFramework",
 )
 
@@ -493,27 +455,14 @@ tasks.named("build") {
 val requiredPublicationNames = setOf(
     "kotlinMultiplatform",
     "android",
-    "jvm",
     "js",
     "wasmJs",
-    "wasmWasi",
-    "androidNativeArm32",
-    "androidNativeArm64",
-    "androidNativeX64",
-    "androidNativeX86",
     "iosArm64",
     "iosSimulatorArm64",
     "iosX64",
-    "linuxArm64",
     "linuxX64",
     "macosArm64",
     "mingwX64",
-    "tvosArm64",
-    "tvosSimulatorArm64",
-    "watchosArm32",
-    "watchosArm64",
-    "watchosDeviceArm64",
-    "watchosSimulatorArm64",
 )
 
 fun publicationMetadataTaskName(publicationName: String): String =
@@ -545,43 +494,8 @@ afterEvaluate {
             tasks.matching {
                 name.endsWith("MainClasses") ||
                     name.endsWith("TestClasses") ||
-                    name.endsWith("Binaries") ||
-                    name.endsWith("XCFramework")
+                    name.endsWith("Binaries")
             },
         )
     }
-}
-
-// The generated Wasm-WASI Node test runner cannot see the filesystem unless
-// the project directory is preopened. Patch the runner before wasmWasiNodeTest.
-val patchWasmWasiNodePreopens = tasks.register("patchWasmWasiNodePreopens") {
-    description = "Preopen the project directory for the generated Wasm-WASI Node test runner."
-    group = "verification"
-    dependsOn("compileTestDevelopmentExecutableKotlinWasmWasi")
-    outputs.upToDateWhen { false }
-
-    doLast {
-        val runnerFile = layout.buildDirectory.file(
-            "compileSync/wasmWasi/test/testDevelopmentExecutable/kotlin/${rootProject.name}-test.mjs",
-        ).get().asFile
-        if (!runnerFile.exists()) {
-            // No Wasm-WASI test runner was generated (the repo has no
-            // wasmWasi test sources), so there is nothing to preopen.
-            return@doLast
-        }
-        val text = runnerFile.readText()
-        val withCwdImport = text.replace(
-            "import { argv, env } from 'node:process';",
-            "import { argv, env, cwd } from 'node:process';",
-        )
-        val patched = withCwdImport.replace(
-            "const wasi = new WASI({ version: 'preview1', args: argv, env, });",
-            "const wasi = new WASI({ version: 'preview1', args: argv, env, preopens: { '/': cwd() }, });",
-        )
-        runnerFile.writeText(patched)
-    }
-}
-
-tasks.named("wasmWasiNodeTest") {
-    dependsOn(patchWasmWasiNodePreopens)
 }
