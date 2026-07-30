@@ -1,8 +1,5 @@
 package io.github.kotlinmania.ratatuimacros
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import ratatui.layout.Constraint
 import ratatui.layout.Layout
 import ratatui.layout.Rect
@@ -14,6 +11,9 @@ import ratatui.text.Span
 import ratatui.text.Text
 import ratatui.widgets.table.Cell
 import ratatui.widgets.table.Row
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class MacroHelpersTest {
     @Test
@@ -81,14 +81,15 @@ class MacroHelpersTest {
 
     @Test
     fun layoutHelpersCreateConstraintsAndLayouts() {
-        val all = listOf(
-            Constraint.Percentage(20),
-            Constraint.Min(1),
-            Constraint.Max(10),
-            Constraint.Ratio(1u, 3u),
-            Constraint.Length(5),
-            Constraint.Fill(2),
-        )
+        val all =
+            listOf(
+                Constraint.Percentage(20),
+                Constraint.Min(1),
+                Constraint.Max(10),
+                Constraint.Ratio(1u, 3u),
+                Constraint.Length(5),
+                Constraint.Fill(2),
+            )
 
         assertEquals(all, constraints(percent(20), ge(1), le(10), ratio(1, 3), eq(5), fill(2)))
         assertEquals(
@@ -132,14 +133,15 @@ class MacroHelpersTest {
         val two = 2
         val ten = 10
         val zero = 0
-        val expected = listOf(
-            Rect.new(0, 0, 1, 10),
-            Rect.new(1, 0, 1, 10),
-            Rect.new(2, 0, 1, 10),
-            Rect.new(3, 0, 5, 10),
-            Rect.new(8, 0, 1, 10),
-            Rect.new(9, 0, 1, 10),
-        )
+        val expected =
+            listOf(
+                Rect.new(0, 0, 1, 10),
+                Rect.new(1, 0, 1, 10),
+                Rect.new(2, 0, 1, 10),
+                Rect.new(3, 0, 5, 10),
+                Rect.new(8, 0, 1, 10),
+                Rect.new(9, 0, 1, 10),
+            )
 
         assertEquals(
             expected,

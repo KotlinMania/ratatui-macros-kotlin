@@ -6,3 +6,5 @@ package io.github.kotlinmania.ratatuimacros
  *
  * This package groups the layout, line, row, span, and text helpers.
  */
+
+internal const val LIB_DESCRIPTION: String = "ratatui-macros-kotlin"
