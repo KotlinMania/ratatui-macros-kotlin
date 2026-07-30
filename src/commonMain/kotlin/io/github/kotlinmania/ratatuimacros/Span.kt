@@ -92,13 +92,14 @@ private fun renderFormat(format: String, namedArgs: Map<String, Any?>, args: Arr
                     val placeholder = format.substring(index + 1, close)
                     val split = splitOnce(placeholder, ':')
                     val name = split.first.takeIf { it.isNotBlank() }
-                    val value = if (name == null) {
-                        require(positionalIndex < args.size) { "Not enough format args for: $format" }
-                        args[positionalIndex++]
-                    } else {
-                        require(namedArgs.containsKey(name)) { "Missing named arg '$name' for: $format" }
-                        namedArgs[name]
-                    }
+                    val value =
+                        if (name == null) {
+                            require(positionalIndex < args.size) { "Not enough format args for: $format" }
+                            args[positionalIndex++]
+                        } else {
+                            require(namedArgs.containsKey(name)) { "Missing named arg '$name' for: $format" }
+                            namedArgs[name]
+                        }
                     output.append(applyPaddingSpec(value, split.second))
                     index = close + 1
                 }
