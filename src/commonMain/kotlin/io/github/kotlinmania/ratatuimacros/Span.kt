@@ -89,8 +89,8 @@ private fun renderFormat(format: String, namedArgs: Map<String, Any?>, args: Arr
                 } else {
                     val close = format.indexOf('}', startIndex = index + 1)
                     require(close >= 0) { "Unclosed '{' in format string: $format" }
-                    val placeholder = format.substring(index + 1, close)
-                    val split = splitOnce(placeholder, ':')
+                    val tokenSpec = format.substring(index + 1, close)
+                    val split = splitOnce(tokenSpec, ':')
                     val name = split.first.takeIf { it.isNotBlank() }
                     val value =
                         if (name == null) {
