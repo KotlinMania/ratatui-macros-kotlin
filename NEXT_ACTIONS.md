@@ -8,10 +8,12 @@ Based on AST analysis, here are the concrete next steps.
 - **Function parity:** 0/17 matched (target 53) — 0.0%
 - **Class/type parity:** 0/0 matched — N/A
 - **Combined symbol parity:** 0/17 matched (target 53) — 0.0%
-- **Average inline-code cosine:** 0.31 (function body across 5 matched files)
+- **Average inline-code cosine:** 0.21 (function body across 5 matched files)
 - **Average documentation cosine:** 0.35 (doc text across 5 matched files)
 - **Cheat-zeroed Files:** 2
 - **Critical Issues:** 5 files with <0.60 function similarity
+- **Needs Review:** 0 files with 0.60-0.84 function similarity
+- **Excellent:** 1 files with >=0.85 function similarity
 
 ## Priority 1: Fix Incomplete High-Dependency Files
 
@@ -30,9 +32,9 @@ Every matched file is listed below with function and type symbol parity.
 ### 1. text
 
 - **Target:** `ratatuimacros.Text`
-- **Similarity:** 0.57
+- **Similarity:** 0.03
 - **Dependents:** 1
-- **Priority Score:** 1010104.2
+- **Priority Score:** 1010109.7
 - **Functions:** 0/1 matched (target 4)
 - **Missing functions:** `text`
 - **Types:** 0/0 matched
